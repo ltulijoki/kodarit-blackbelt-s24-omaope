@@ -17,6 +17,14 @@ async function sendMessage() {
     },
     body: JSON.stringify({ question: userMessage })
   })
+    console.log(response)
+    const data = await response.json()
+  if (response.status === 200) {
+    console.log(data)
+    console.log(data.question)
+  } else {
+    console.log(data.error)
+  }
 }
 
 function addMessageToChat(message) {
