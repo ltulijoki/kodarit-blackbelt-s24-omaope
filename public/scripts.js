@@ -10,20 +10,21 @@ async function sendMessage() {
   console.log(userMessage)
   addMessageToChat(userMessage)
 
-  const response = await fetch('/ekatesti', {
+  const response = await fetch('/chat', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({ question: userMessage })
   })
-    console.log(response)
     const data = await response.json()
   if (response.status === 200) {
     console.log(data)
     console.log(data.question)
+    addMessageToChat(data.question)
   } else {
-    console.log(data.error)
+    console.log(response)
+    addMessageToChat('ChatGPT: Jotain meni pieleen. Yritä myöhemmin uudelleen.')
   }
 }
 
