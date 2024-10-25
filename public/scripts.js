@@ -20,8 +20,8 @@ async function sendMessage() {
     const data = await response.json()
   if (response.status === 200) {
     console.log(data)
-    console.log(data.question)
-    addMessageToChat(data.question)
+    console.log(data.reply)
+    addMessageToChat(data.reply)
   } else {
     console.log(response)
     addMessageToChat('ChatGPT: Jotain meni pieleen. Yritä myöhemmin uudelleen.')
@@ -30,6 +30,7 @@ async function sendMessage() {
 
 function addMessageToChat(message) {
   const messageElement = document.createElement('div')
+  messageElement.classList.add('message')
   messageElement.textContent = message
   console.log(messageElement)
   document.getElementById('chatbox').appendChild(messageElement)
