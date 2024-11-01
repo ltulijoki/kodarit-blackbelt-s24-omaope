@@ -19,6 +19,7 @@ body {
 
 .message {
     text-align: left;
+    margin-bottom: 5px;
 }
 
 .user-message {
