@@ -3,11 +3,17 @@ body {
     margin: 0;
 }
 
+.column {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
 .chatbox {
     background-color: white;
     width: 100%;
     padding-bottom: 10px;
     padding-top: 10px;
+    border-radius: 5px 5px 0 0;
 }
 
 .user-input {
@@ -15,6 +21,7 @@ body {
     border: none;
     padding-bottom: 5px;
     padding-top: 5px;
+    border-radius: 0 0 5px 5px;
 }
 
 .message {
@@ -28,4 +35,18 @@ body {
 
 .bot-message {
     font-weight: normal;
+}
+
+.input-container {
+    display: flex;
+    margin-bottom: 10px;
+    width: 100%;
+    background-color: white;
+    border-radius: 5px;
+}
+
+#image-input {
+    flex: 1;
+    padding: 10px;
+    border: none;
 }

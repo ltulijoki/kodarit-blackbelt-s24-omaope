@@ -47,4 +47,13 @@ function sendImages() {
     alert('Valitse kuvia ensin.')
     return
   }
+
+  const formData = new FormData()
+  console.log(formData)
+
+  for (const file of files) {
+    formData.append('images', file)
+  }
+
+  console.log(formData.getAll('images'))
 }
