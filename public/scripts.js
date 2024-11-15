@@ -38,7 +38,7 @@ function addMessageToChat(message, className) {
   document.getElementById('chatbox').appendChild(messageElement)
 }
 
-function sendImages() {
+async function sendImages() {
   const imageInput = document.getElementById('image-input')
   const files = imageInput.files
   console.log(files)
@@ -56,4 +56,9 @@ function sendImages() {
   }
 
   console.log(formData.getAll('images'))
+
+  const response = await fetch('/upload-images', {
+    method: 'POST',
+    body: formData
+  })
 }

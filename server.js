@@ -1,6 +1,7 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
+import multer from 'multer'
 
 const app = express()
 const port = 3000
@@ -9,6 +10,8 @@ app.use(express.static('public'))
 app.use(bodyParser.json())
 
 dotenv.config()
+
+const upload = multer({ dest: 'uploads/' })
 
 app.post('/chat', async (req, res) => {
   const userMessage = req.body.question;
@@ -37,14 +40,11 @@ app.post('/chat', async (req, res) => {
   } catch (error) {
     console.error('Virheviesti:', error.message)
   }
+})
 
-  /*
-  if (userMessage) {
-    res.json({ question: `Tämä on serverin palauttama viesti frontille: ${userMessage}` })
-  } else {
-    res.status(400).json({ error: 'Kysymys puuttuu' })
-  }
-  */
+app.post('/upload-images', upload.array('images', 10), (req, res) => {
+  console.log('Kuvat lähetetty')
+  res.json({ reply: 'Kuvat vastaanotettu.' })
 })
 
 /*
