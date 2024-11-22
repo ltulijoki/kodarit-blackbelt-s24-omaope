@@ -2,6 +2,8 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
 import multer from 'multer'
+import vision from '@google-cloud/vision'
+import fs from 'fs'
 
 const app = express()
 const port = 3000
@@ -12,6 +14,12 @@ app.use(bodyParser.json())
 dotenv.config()
 
 const upload = multer({ dest: 'uploads/' })
+
+const client = new vision.ImageAnnotatorClient({
+  keyFilename: 'omaope-vision.json'
+})
+
+let koealuTekstina = ''
 
 app.post('/chat', async (req, res) => {
   const userMessage = req.body.question;
@@ -43,8 +51,15 @@ app.post('/chat', async (req, res) => {
 })
 
 app.post('/upload-images', upload.array('images', 10), (req, res) => {
+  const files = req.files;
   console.log('Kuvat lähetetty')
-  res.json({ reply: 'Kuvat vastaanotettu.' })
+  console.log(files)
+
+  if (!files || files.length === 0) {
+    return res.status(400).json({ error: 'Kuvia ei ole lisätty/löydy' })
+  } else {
+    res.json({message: 'Kuvat vastaanotettu'})
+  }
 })
 
 /*
