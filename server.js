@@ -19,7 +19,8 @@ const client = new vision.ImageAnnotatorClient({
   keyFilename: 'omaope-vision.json'
 })
 
-let koealuTekstina = ''
+let koealueTekstina = ''
+let context = []
 
 app.post('/chat', async (req, res) => {
   const userMessage = req.body.question;
@@ -50,7 +51,7 @@ app.post('/chat', async (req, res) => {
   }
 })
 
-app.post('/upload-images', upload.array('images', 10), (req, res) => {
+app.post('/upload-images', upload.array('images', 10), async (req, res) => {
   const files = req.files;
   console.log('Kuvat lähetetty')
   console.log(files)
@@ -58,7 +59,21 @@ app.post('/upload-images', upload.array('images', 10), (req, res) => {
   if (!files || files.length === 0) {
     return res.status(400).json({ error: 'Kuvia ei ole lisätty/löydy' })
   } else {
-    res.json({message: 'Kuvat vastaanotettu'})
+      const texts = await Promise.all(files.map(async file => {
+      const imagePath = file.path
+      console.log(imagePath)
+      const [result] = await client.textDetection(imagePath)
+      const detections = result.textAnnotations
+      console.log('OCR Detected Text:', detections)
+      fs.unlinkSync(imagePath)
+      return detections.length > 0 ? detections[0].description : ''
+    }))
+
+    console.log(texts)
+    koealueTekstina = texts.join(' ')
+    console.log(koealueTekstina)
+
+    context = [{ role: 'user', content: koealueTekstina }]
   }
 })
 
