@@ -74,6 +74,41 @@ app.post('/upload-images', upload.array('images', 10), async (req, res) => {
     console.log(koealueTekstina)
 
     context = [{ role: 'user', content: koealueTekstina }]
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4',
+        messages: context.concat([{ role: 'user', content: 'Luo yksi yksinkertainen ja selkeä kysymys ja sen vastaus yllä olevasta tekstistä suomeksi. Kysy vain yksi asia kerrallaan.' }]),
+        max_tokens: 150
+      })
+    })
+
+    const data = await response.json()
+    console.log(data.choices[0].message.content)
+
+    const responseText = data.choices[0].message.content
+    const [question, answer] = responseText.includes('Vastaus:') ? responseText.split('Vastaus:') : [responseText, null]
+
+    console.log('Parsed Question:', question)
+    console.log('Parsed Answer:', answer)
+
+    if (!question || !answer) {
+      return res.status(400).json({ error: 'Model could not generate a valid question. Please provide a clearer text.' })
+    }
+
+    let currentQuestion = ''
+    let correctAnswer = ''
+
+    currentQuestion = question.trim()
+    correctAnswer = answer.trim()
+
+    context.push({ role: 'assistant', content: `Kysymys: ${currentQuestion}` })
+    context.push({ role: 'assistant', content: `Vastaus: ${correctAnswer}` })
   }
 })
 
