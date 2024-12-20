@@ -10,7 +10,7 @@ async function sendMessage() {
   const userMessage = input.value;
   input.value = '';
   console.log(userMessage)
-  addMessageToChat('Sinä: ' + userMessage, 'user-message')
+  addMessageToChat('Sinä: ' + userMessage, 'user-message', 'chatbox')
 
   const response = await fetch('/chat', {
     method: 'POST',
@@ -23,19 +23,19 @@ async function sendMessage() {
   if (response.status === 200) {
     console.log(data)
     console.log(data.reply)
-    addMessageToChat('ChatGPT: ' + data.reply, 'bot-message')
+    addMessageToChat('ChatGPT: ' + data.reply, 'bot-message', 'chatbox')
   } else {
     console.log(response)
-    addMessageToChat('ChatGPT: Jotain meni pieleen. Yritä myöhemmin uudelleen.', 'bot-message')
+    addMessageToChat('ChatGPT: Jotain meni pieleen. Yritä myöhemmin uudelleen.', 'bot-message', 'chatbox')
   }
 }
 
-function addMessageToChat(message, className) {
+function addMessageToChat(message, className, box) {
   const messageElement = document.createElement('div')
   messageElement.classList.add('message', className)
   messageElement.textContent = message
   console.log(messageElement)
-  document.getElementById('chatbox').appendChild(messageElement)
+  document.getElementById(box).appendChild(messageElement)
 }
 
 async function sendImages() {
@@ -62,12 +62,13 @@ async function sendImages() {
     body: formData
   })
 
-  const data = await response.json()
+  const data = await response.json()  
 
   if (response.status === 200) {
-    console.log(data.message)
+    console.log(data.question)
+    addMessageToChat('OmaOpe: ' + data.question, 'bot-message', 'omaopebox')
   } else {
     console.log(data)
     alert(data.error)
-}
+  }
 }

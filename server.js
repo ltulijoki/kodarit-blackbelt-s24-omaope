@@ -83,7 +83,7 @@ app.post('/upload-images', upload.array('images', 10), async (req, res) => {
       },
       body: JSON.stringify({
         model: 'gpt-4',
-        messages: context.concat([{ role: 'user', content: 'Luo yksi yksinkertainen ja selkeä kysymys ja sen vastaus yllä olevasta tekstistä suomeksi. Kysy vain yksi asia kerrallaan.' }]),
+        messages: context.concat([{ role: 'user', content: 'Luo yksi yksinkertainen ja selkeä kysymys kysymys-kenttään ja sen vastaus yllä olevasta tekstistä suomeksi vastaus-kenttään. Kysy vain yksi asia kerrallaan.' }]),
         max_tokens: 150
       })
     })
@@ -109,6 +109,8 @@ app.post('/upload-images', upload.array('images', 10), async (req, res) => {
 
     context.push({ role: 'assistant', content: `Kysymys: ${currentQuestion}` })
     context.push({ role: 'assistant', content: `Vastaus: ${correctAnswer}` })
+
+    res.json({ question: currentQuestion, answer: correctAnswer })
   }
 })
 
