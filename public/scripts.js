@@ -1,8 +1,12 @@
+let correctAnswer = ''
+
 document.getElementById('send-button-chatbox').addEventListener('click', sendMessage)
 
 document.getElementById('user-input-chatbox').addEventListener('keypress', e => e.key == 'Enter' && sendMessage())
 
-document.getElementById('send-images-button').addEventListener('click', sendImages);
+document.getElementById('send-images-button').addEventListener('click', sendImages)
+
+document.getElementById('send-answer-button').addEventListener('click', sendAnswer)
 
 async function sendMessage() {
   console.log('Viesti lähetetty')
@@ -67,8 +71,23 @@ async function sendImages() {
   if (response.status === 200) {
     console.log(data.question)
     addMessageToChat('OmaOpe: ' + data.question, 'bot-message', 'omaopebox')
+    correctAnswer = data.answer
   } else {
     console.log(data)
     alert(data.error)
   }
+}
+
+async function sendAnswer() {
+  const answerInput = document.getElementById('answer-input').value
+  if (answerInput.trim() === '') return
+  console.log(answerInput)
+
+  const response = await fetch('/check-answer', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ user_answer: answerInput, correct_answer: correctAnswer })
+  })
 }

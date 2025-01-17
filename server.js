@@ -5,6 +5,9 @@ import multer from 'multer'
 import vision from '@google-cloud/vision'
 import fs from 'fs'
 
+let currentQuestion = ''
+let correctAnswer = ''
+
 const app = express()
 const port = 3000
 
@@ -100,10 +103,7 @@ app.post('/upload-images', upload.array('images', 10), async (req, res) => {
     if (!question || !answer) {
       return res.status(400).json({ error: 'Model could not generate a valid question. Please provide a clearer text.' })
     }
-
-    let currentQuestion = ''
-    let correctAnswer = ''
-
+    
     currentQuestion = question.trim()
     correctAnswer = answer.trim()
 
@@ -126,6 +126,39 @@ app.post('/ekatesti', (req, res) => {
   }
 })
 */
+
+app.post('/check-answer', async (req, res) => {
+  const userAnswer = req.body.user_answer
+  const correctAnswer = req.body.correct_answer
+  console.log('Käyttäjän vastaus: ' + userAnswer)
+  console.log('Tietokoneen vastaus: ' + correctAnswer)
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'Olet aina ihana opettaja joka arvioi oppilaan vastauksen kannustavaan sävyyn.' },
+        { role: 'user', content: `Kysymys: ${currentQuestion}` },
+        { role: 'user', content: `Oikea vastaus: ${correctAnswer}` },
+        { role: 'user', content: `Opiskelijan vastaus: ${userAnswer}` },
+        { role: 'user', content: 'Arvioi opiskelijan vastaus asteikolla 0-10 ja anna lyhyt selitys. Kehu oppilasta.' }
+      ],
+      max_tokens: 150
+    })
+  })
+
+  if(response.status === 200){
+    const data = await response.json()
+    const evaluation = data.choices[0].message.content.trim()
+    console.log('Evaluation:', evaluation)
+    res.json({ evaluation }); 
+ }
+})
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`)
