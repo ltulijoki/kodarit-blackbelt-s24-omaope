@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import multer from 'multer'
 import vision from '@google-cloud/vision'
 import fs from 'fs'
+import { log } from 'console'
 
 let currentQuestion = ''
 let correctAnswer = ''
@@ -37,7 +38,7 @@ app.post('/chat', async (req, res) => {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           { role: 'user', content: userMessage }
         ],
@@ -85,7 +86,7 @@ app.post('/upload-images', upload.array('images', 10), async (req, res) => {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: context.concat([{ role: 'user', content: 'Luo yksi yksinkertainen ja selkeä kysymys kysymys-kenttään ja sen vastaus yllä olevasta tekstistä suomeksi vastaus-kenttään. Kysy vain yksi asia kerrallaan.' }]),
         max_tokens: 150
       })
@@ -140,7 +141,7 @@ app.post('/check-answer', async (req, res) => {
       'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       messages: [
         { role: 'system', content: 'Olet aina ihana opettaja joka arvioi oppilaan vastauksen kannustavaan sävyyn.' },
         { role: 'user', content: `Kysymys: ${currentQuestion}` },
@@ -152,13 +153,64 @@ app.post('/check-answer', async (req, res) => {
     })
   })
 
-  if(response.status === 200){
+  if (response.status === 200) {
     const data = await response.json()
     const evaluation = data.choices[0].message.content.trim()
     console.log('Evaluation:', evaluation)
     res.json({ evaluation }); 
  }
 })
+
+app.post('/next-question', async (req, res) => {
+  console.log('Fetching next question')
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: context.concat([{ role: 'user', content: 'Luo toinen yksinkertainen ja eri kuin edellisillä kerroilla ja selkeä koetehtävä ja sen vastaus yllä olevasta tekstistä suomeksi: "${combinedText}". Kysy vain yksi asia kerrallaan.' }]),
+        max_tokens: 150
+      })
+    })
+
+    const data = await response.json()
+    console.log('API response:', JSON.stringify(data, null, 2))
+
+    if (!data.choices || data.choices.length === 0 || !data.choices[0].message || !data.choices[0].message.content) {
+      throw new Error('No valid choices returned from API')
+    }
+
+    const responseText = data.choices[0].message.content.trim()
+    console.log('Response Text:', responseText)
+
+    const [question, answer] = responseText.includes('Vastaus:')
+      ? responseText.split('Vastaus:')
+      : [responseText, null]
+
+    console.log('Parsed Question:', question)
+    console.log('Parsed Answer:', answer)
+
+    if (!question || !answer) {
+      return res.status(400).json({ error: 'Model could not generate a valid question. Please provide a clearer text.' })
+    }
+
+    currentQuestion = question.trim()
+    correctAnswer = answer.trim()
+
+    context.push({ role: 'assistant', content: `Kysymys: ${currentQuestion}` })
+    context.push({ role: 'assistant', content: `Vastaus: ${correctAnswer}` })
+
+    res.json({ question: currentQuestion, answer: correctAnswer })
+  } catch (error) {
+    console.error('Error:', error.message)
+    res.status(500).json({ error: error.message })
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`)

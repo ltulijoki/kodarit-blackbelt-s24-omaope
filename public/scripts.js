@@ -80,6 +80,8 @@ async function sendImages() {
 
 async function sendAnswer() {
   const answerInput = document.getElementById('answer-input').value
+  addMessageToChat('Sinä: ' + answerInput, 'user-message', 'omaopebox')
+  document.getElementById('answer-input').value = ''
   if (answerInput.trim() === '') return
   console.log(answerInput)
 
@@ -90,4 +92,37 @@ async function sendAnswer() {
     },
     body: JSON.stringify({ user_answer: answerInput, correct_answer: correctAnswer })
   })
+
+  const data = await response.json();
+  
+  if (response.status === 200) {
+    console.log(data.evaluation)
+    addMessageToChat('OmaOpe: ' + data.evaluation, 'bot-message', 'omaopebox')
+    fetchNextQuestion()
+  } else {
+    console.log(data)
+    alert(data.error)
+  }
+}
+
+async function fetchNextQuestion() {
+  try {
+    const response = await fetch('/next-question', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+
+    const data = await response.json()
+      currentQuestion = data.question
+      correctAnswer = data.answer
+      console.log(currentQuestion)
+      console.log(correctAnswer)
+      addMessageToChat('OmaOpe: ' + data.question, 'bot-message', 'omaopebox')
+
+  } catch(error) {
+    console.error('Error:', error);
+    addMessageToChat('ChatGPT: Jotain meni pieleen. Yritä uudelleen myöhemmin.', 'bot-message', 'omaopebox')
+  }
 }
