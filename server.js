@@ -4,7 +4,6 @@ import dotenv from 'dotenv'
 import multer from 'multer'
 import vision from '@google-cloud/vision'
 import fs from 'fs'
-import { log } from 'console'
 
 let currentQuestion = ''
 let correctAnswer = ''
